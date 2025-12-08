@@ -7,16 +7,16 @@ import { assets } from '../../assets/assets'
 
 const DoctorAppointment = () => {
 
-  const {dToken,appointments,getAppointments} = useContext(DoctorContext)
-  const {calculateAge, slotDateFormat,currency} = useContext(AppContext)
+  const { dToken, appointments, getAppointments, completeAppointment, cancelAppointment } = useContext(DoctorContext)
+  const { calculateAge, slotDateFormat, currency } = useContext(AppContext)
 
-  useEffect(()=> {
+  useEffect(() => {
 
-    if(dToken) {
+    if (dToken) {
       getAppointments()
     }
 
-  },[dToken])
+  }, [dToken])
 
 
   return (
@@ -34,9 +34,9 @@ const DoctorAppointment = () => {
         </div>
 
         {
-          appointments.map((item,index)=> {
+          appointments.reverse().map((item, index) => {
             return <div className='flex flex-wrap justify-between max-sm:gap-5 max-sm:text-base sm:grid grid-cols-[0.5fr_2fr_1fr_1fr_3fr_1fr_1fr] gap-1 items-center text-gray-500 py-3 px-6 border-b hover:bg-gray-50' key={index}>
-              <p className='max-sm:hidden'>{index+1}</p>
+              <p className='max-sm:hidden'>{index + 1}</p>
               <div className='flex items-center gap-2'>
                 <img className='w-8 rounded-full' src={item.userData.image} alt="" />
                 <p>{item.userData.name}</p>
@@ -48,13 +48,21 @@ const DoctorAppointment = () => {
                   }
                 </p>
               </div>
-              <p>{calculateAge(item.userData.dob)}</p>
+              <p className='max-sm:hidden'>{calculateAge(item.userData.dob)}</p>
               <p>{slotDateFormat(item.slotDate)},{item.slotTime}</p>
               <p>{currency}{item.amount}</p>
-              <div>
-                <img src={assets.cancel_icon} alt="" />
-                <img src={assets.tick_icon} alt="" />
-              </div>
+
+              {
+                item.cancelled
+                  ? <p className='text-red-400 text-xs font-medium'>Cancelled</p>
+                  : item.isCompleted
+                    ? <p className='text-green-500 text-xs font-medium'>Completed</p>
+                    : <div className='flex'>
+                      <img onClick={() => cancelAppointment(item._id)} className='w-10 cursor-pointer' src={assets.cancel_icon} alt="" />
+                      <img onClick={() => completeAppointment(item._id)} className='w-10 cursor-pointer' src={assets.tick_icon} alt="" />
+                    </div>
+              }
+
             </div>
           })
         }
