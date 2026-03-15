@@ -2,26 +2,26 @@ import prescriptionModel from "../models/prescriptoModel.js"
 
 
 // ADD PRESCRIPTION
+
 const addPrescription = async (req,res)=>{
 
 try{
 
-const {patientId,doctorId,appointmentId,date,disease,tablets} = req.body
+const {appointmentId,userId,date,disease,tablets} = req.body
 
 const newPrescription = new prescriptionModel({
-    patientId,
-    doctorId,
-    appointmentId,
-    date,
-    disease,
-    tablets
+appointmentId,
+userId,
+date,
+disease,
+tablets
 })
 
 await newPrescription.save()
 
 res.json({
-    success:true,
-    message:"Prescription Saved Successfully"
+success:true,
+message:"Prescription added successfully"
 })
 
 }catch(error){
@@ -29,8 +29,8 @@ res.json({
 console.log(error)
 
 res.json({
-    success:false,
-    message:"Error saving prescription"
+success:false,
+message:"Error adding prescription"
 })
 
 }
@@ -40,19 +40,22 @@ res.json({
 
 
 // GET PATIENT HISTORY
+
 const getPatientHistory = async (req,res)=>{
 
 try{
 
 const {patientId} = req.params
 
-const history = await prescriptionModel
-.find({patientId})
+const prescriptions =
+await prescriptionModel
+.find({userId:patientId})
 .sort({createdAt:-1})
 
+
 res.json({
-    success:true,
-    history
+success:true,
+prescriptions
 })
 
 }catch(error){
@@ -60,8 +63,8 @@ res.json({
 console.log(error)
 
 res.json({
-    success:false,
-    message:"Error fetching history"
+success:false,
+message:"Error fetching history"
 })
 
 }
@@ -69,38 +72,4 @@ res.json({
 }
 
 
-
-// GET APPOINTMENT PRESCRIPTION
-const getAppointmentPrescription = async (req,res)=>{
-
-try{
-
-const {appointmentId} = req.params
-
-const prescription = await prescriptionModel
-.findOne({appointmentId})
-
-res.json({
-    success:true,
-    prescription
-})
-
-}catch(error){
-
-console.log(error)
-
-res.json({
-    success:false,
-    message:"Error fetching prescription"
-})
-
-}
-
-}
-
-
-export {
-addPrescription,
-getPatientHistory,
-getAppointmentPrescription
-}
+export { addPrescription, getPatientHistory }

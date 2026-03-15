@@ -1,25 +1,15 @@
 import express from "express"
-
-import {
-addPrescription,
-getPatientHistory,
-getAppointmentPrescription
-} from "../controllers/prescriptoController.js"
-
+import { addPrescription, getPatientHistory } from "../controllers/prescriptoController.js"
 
 const prescriptionRouter = express.Router()
 
 
-// SAVE PRESCRIPTION
-prescriptionRouter.post("/add",addPrescription)
+// ADD PRESCRIPTION
+prescriptionRouter.post("/add", addPrescription)
 
 
-// GET PATIENT HISTORY
-prescriptionRouter.get("/patient-history/:patientId",getPatientHistory)
-
-
-// GET APPOINTMENT PRESCRIPTION
-prescriptionRouter.get("/appointment-prescription/:appointmentId",getAppointmentPrescription)
+// PATIENT HISTORY
+prescriptionRouter.get("/patient-history/:patientId", getPatientHistory)
 
 
 export default prescriptionRouter
