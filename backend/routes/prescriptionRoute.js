@@ -4,7 +4,7 @@ import {
 addPrescription,
 getPatientHistory,
 getAppointmentPrescription
-} from "../controllers/doctorController.js"
+} from "../controllers/prescriptoController.js"
 
 
 const prescriptionRouter = express.Router()
