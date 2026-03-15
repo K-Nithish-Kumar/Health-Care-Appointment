@@ -163,7 +163,7 @@ try {
   if (historyData.doctorName !== '') {
 
     await axios.post(
-      backendUrl + "/api/history/submit-history",
+      backendUrl + "/api/submit-history",
       {
         docId,
         doctorName: historyData.doctorName,
