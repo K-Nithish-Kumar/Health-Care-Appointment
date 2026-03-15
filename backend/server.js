@@ -8,6 +8,7 @@ import doctorRouter from './routes/doctorRoute.js'
 import userRouter from './routes/userRoute.js';
 import prescriptionRouter from "./routes/prescriptionRoute.js"
 import appointmentRouter from "./routes/appointmentRoute.js"
+import historyRouter from "./routes/historyRoute.js"
 
 
 //app config
@@ -26,6 +27,7 @@ app.use('/api/doctor',doctorRouter)
 app.use('/api/user',userRouter)
 app.use("/api/prescription", prescriptionRouter)
 app.use("/api/appointment",appointmentRouter)
+app.use("/api/history",historyRouter)
 
 //localhost:4000/api/admin/add-doctor
 
