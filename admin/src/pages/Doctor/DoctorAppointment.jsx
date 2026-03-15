@@ -46,9 +46,9 @@ updated[index][field] = value
 setTablets(updated)
 }
 
-const submitPrescription = async()=>{
+const submitPrescription = async(e)=>{
 try{
-
+e.preventDefault();
 const {data} = await axios.post(
 backendUrl + "/api/prescription/add",
 {
