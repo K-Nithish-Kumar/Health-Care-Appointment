@@ -1,20 +1,25 @@
 import express from "express"
 
 import {
-  addPrescription,
-  getPatientPrescriptions,
-  addPatientHistory,
-  getPatientHistory
-} from "../controllers/prescriptoController.js"
+addPrescription,
+getPatientHistory,
+getAppointmentPrescription
+} from "../controllers/doctorController.js"
 
-const router = express.Router()
 
-router.post("/add",addPrescription)
+const prescriptionRouter = express.Router()
 
-router.get("/patient/:patientId",getPatientPrescriptions)
 
-router.post("/history/add",addPatientHistory)
+// SAVE PRESCRIPTION
+prescriptionRouter.post("/add",addPrescription)
 
-router.get("/history/:patientId",getPatientHistory)
 
-export default router
+// GET PATIENT HISTORY
+prescriptionRouter.get("/patient-history/:patientId",getPatientHistory)
+
+
+// GET APPOINTMENT PRESCRIPTION
+prescriptionRouter.get("/appointment-prescription/:appointmentId",getAppointmentPrescription)
+
+
+export default prescriptionRouter

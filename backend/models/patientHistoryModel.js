@@ -1,27 +1,36 @@
 import mongoose from "mongoose"
 
-const historySchema = new mongoose.Schema({
+const patientHistorySchema = new mongoose.Schema({
 
-  patientId:{
-    type:String,
-    required:true
-  },
+patientId:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"user",
+required:true
+},
 
-  doctorName:String,
+doctorName:{
+type:String,
+required:true
+},
 
-  disease:String,
+disease:{
+type:String,
+required:true
+},
 
-  tablets:String,
+tablets:{
+type:String,
+required:true
+},
 
-  notes:String,
+consultedDate:{
+type:String
+}
 
-  date:{
-    type:Date,
-    default:Date.now
-  }
+},{timestamps:true})
 
-})
+const patientHistoryModel =
+mongoose.models.patientHistory ||
+mongoose.model("patientHistory",patientHistorySchema)
 
-const PatientHistory = mongoose.model("PatientHistory",historySchema)
-
-export default PatientHistory
+export default patientHistoryModel

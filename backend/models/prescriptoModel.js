@@ -1,46 +1,47 @@
 import mongoose from "mongoose"
 
 const tabletSchema = new mongoose.Schema({
-
-  tabletName:String,
-  morning:Boolean,
-  afternoon:Boolean,
-  night:Boolean,
-  food:String,
-  days:Number
-
+    tabletName:{type:String,required:true},
+    morning:{type:Boolean,default:false},
+    afternoon:{type:Boolean,default:false},
+    night:{type:Boolean,default:false},
+    food:{type:String,enum:["Before Food","After Food"],default:"After Food"}
 })
 
 const prescriptionSchema = new mongoose.Schema({
 
-  patientId:{
-    type:String,
-    required:true
-  },
+    patientId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"user",
+        required:true
+    },
 
-  doctorId:{
-    type:String,
-    required:true
-  },
+    doctorId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"doctor",
+        required:true
+    },
 
-  doctorName:String,
+    appointmentId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"appointment"
+    },
 
-  disease:{
-    type:String,
-    required:true
-  },
+    date:{
+        type:String,
+        required:true
+    },
 
-  tablets:[tabletSchema],
+    disease:{
+        type:String,
+        required:true
+    },
 
-  notes:String,
+    tablets:[tabletSchema],
 
-  createdAt:{
-    type:Date,
-    default:Date.now
-  }
+},{timestamps:true})
 
-})
+const prescriptionModel =
+mongoose.models.prescription || mongoose.model("prescription",prescriptionSchema)
 
-const Prescription = mongoose.model("Prescription",prescriptionSchema)
-
-export default Prescription
+export default prescriptionModel

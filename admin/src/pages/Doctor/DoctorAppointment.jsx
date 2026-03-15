@@ -80,7 +80,7 @@ const viewHistory = async(userId)=>{
 try{
 
 const {data} = await axios.get(
-backendUrl + "/api/prescription/history/" + userId,
+backendUrl + "/api/patient-history/:patientId" + userId,
 {headers:{dToken}}
 )
 
