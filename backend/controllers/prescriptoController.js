@@ -1,24 +1,29 @@
 import Prescription from "../models/prescriptoModel.js"
+import PatientHistory from "../models/patientHistoryModel.js"
+
+
+// ADD PRESCRIPTION
 
 const addPrescription = async (req,res)=>{
 
   try{
 
-    const { patientId, doctorId, disease, tablets, notes } = req.body
+    const {patientId,doctorId,doctorName,disease,tablets,notes} = req.body
 
-    const prescription = new Prescription({
+    const newPrescription = new Prescription({
       patientId,
       doctorId,
+      doctorName,
       disease,
       tablets,
       notes
     })
 
-    await prescription.save()
+    await newPrescription.save()
 
     res.json({
       success:true,
-      message:"Prescription Added Successfully"
+      message:"Prescription Added"
     })
 
   }
@@ -36,15 +41,17 @@ const addPrescription = async (req,res)=>{
 }
 
 
-// GET PATIENT HISTORY
+// GET PRESCRIPTION HISTORY
 
 const getPatientPrescriptions = async (req,res)=>{
 
   try{
 
-    const { patientId } = req.params
+    const {patientId} = req.params
 
-    const prescriptions = await Prescription.find({patientId})
+    const prescriptions = await Prescription
+      .find({patientId})
+      .sort({createdAt:-1})   // newest first
 
     res.json({
       success:true,
@@ -54,7 +61,33 @@ const getPatientPrescriptions = async (req,res)=>{
   }
   catch(error){
 
-    console.log(error)
+    res.json({
+      success:false,
+      message:error.message
+    })
+
+  }
+
+}
+
+
+// ADD EXTERNAL HISTORY
+
+const addPatientHistory = async (req,res)=>{
+
+  try{
+
+    const history = new PatientHistory(req.body)
+
+    await history.save()
+
+    res.json({
+      success:true,
+      message:"History Added"
+    })
+
+  }
+  catch(error){
 
     res.json({
       success:false,
@@ -66,6 +99,39 @@ const getPatientPrescriptions = async (req,res)=>{
 }
 
 
+// GET HISTORY
+
+const getPatientHistory = async (req,res)=>{
+
+  try{
+
+    const {patientId} = req.params
+
+    const history = await PatientHistory
+      .find({patientId})
+      .sort({date:-1})
+
+    res.json({
+      success:true,
+      history
+    })
+
+  }
+  catch(error){
+
+    res.json({
+      success:false,
+      message:error.message
+    })
+
+  }
+
+}
 
 
-export { addPrescription, getPatientPrescriptions }
+export {
+  addPrescription,
+  getPatientPrescriptions,
+  addPatientHistory,
+  getPatientHistory
+}

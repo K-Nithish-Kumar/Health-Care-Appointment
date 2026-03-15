@@ -1,234 +1,245 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../context/AppContext'
-import { useState } from 'react';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 const MyAppointments = () => {
 
-  const {backendUrl, token, getDoctorsData} = useContext(AppContext);
+const { backendUrl, token, getDoctorsData } = useContext(AppContext)
 
-  const [appointments,setAppointments] = useState([])
-  const [showPrescription,setShowPrescription] = useState(false)
-  const [prescription,setPrescription] = useState(null)
+const [appointments, setAppointments] = useState([])
+const [prescription, setPrescription] = useState(null)
+const [showPrescription, setShowPrescription] = useState(false)
 
-  const months = [" ","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 
-  const slotDateFormat = (slotDate) => {
-    const dateArray = slotDate.split('_')
-    return dateArray[0] + " " + months[Number(dateArray[1])] + " " + dateArray[2]
+const slotDateFormat = (slotDate) => {
+const dateArray = slotDate.split('_')
+return dateArray[0] + " " + months[Number(dateArray[1])] + " " + dateArray[2]
+}
+
+const getUserAppointments = async () => {
+
+try {
+
+  const { data } = await axios.get(
+    backendUrl + "/api/user/appointments",
+    { headers: { token } }
+  )
+
+  if (data.success) {
+    setAppointments(data.appointments.reverse())
   }
 
-  const navigate = useNavigate();
+} catch (error) {
+  console.log(error)
+  toast.error(error.message)
+}
 
-  // FETCH USER APPOINTMENTS
-  const getUserAppointments = async () => {
-    try {
+}
 
-      const {data} = await axios.get(backendUrl + '/api/user/appointments',{headers:{token}})
+const cancelAppointment = async (appointmentId) => {
 
-      if (data.success) {
-        setAppointments(data.appointments.reverse())
-      }
+try {
 
-    } catch (error) {
-      console.log(error);
-      toast.error(error.message)
-    }
+  const { data } = await axios.post(
+    backendUrl + "/api/user/cancel-appointment",
+    { appointmentId },
+    { headers: { token } }
+  )
+
+  if (data.success) {
+    toast.success(data.message)
+    getUserAppointments()
+    getDoctorsData()
   }
 
-  // CANCEL APPOINTMENT
-  const cancelAppointment = async(appointmentId) => {
-    try {
+} catch (error) {
+  console.log(error)
+  toast.error(error.message)
+}
 
-      const {data} = await axios.post(backendUrl + '/api/user/cancel-appointment',{appointmentId},{headers:{token}})
+}
 
-      if (data.success) {
-        toast.success(data.message)
-        getUserAppointments()
-        getDoctorsData();
-      } else {
-        toast.error(data.message)
-      }
+const openPrescription = async (appointmentId) => {
 
-    } catch (error) {
-      console.log(error);
-      toast.error(error.message)
-    }
+try {
+
+  const { data } = await axios.get(
+    backendUrl + "/api/prescription/" + appointmentId,
+    { headers: { token } }
+  )
+
+  if (data.success) {
+    setPrescription(data.prescription)
+    setShowPrescription(true)
   }
 
-  // VIEW PRESCRIPTION
-  const viewPrescription = async (patientId) => {
+} catch (error) {
+  console.log(error)
+}
 
-    try {
+}
 
-      const {data} = await axios.get(`${backendUrl}/api/prescription/patient/${patientId}`)
+useEffect(() => {
+if (token) {
+getUserAppointments()
+}
+}, [token])
 
-      if(data.success && data.prescriptions.length > 0){
+return ( <div>
 
-        setPrescription(data.prescriptions[0])
-        setShowPrescription(true)
+  <p className="pb-3 mt-12 font-medium text-zinc-700 border-b">
+    My appointments
+  </p>
 
-      }else{
+  <div>
 
-        toast.error("Prescription not available")
+    {appointments.map((item, index) => (
 
-      }
-
-    } catch (error) {
-
-      console.log(error)
-      toast.error(error.message)
-
-    }
-
-  }
-
-  const initPay = (order) => {
-
-    const options = {
-      key:import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount:order.amount,
-      currency:order.currency,
-      name:"Appointment Payment",
-      description:"Appointment Payment",
-      order_id:order.id,
-      receipt:order.receipt,
-
-      handler:async (response) => {
-
-        try {
-
-          const {data} = await axios.post(backendUrl + "/api/user/verifyRazorpay",response,{headers:{token}})
-
-          if (data.success) {
-
-            getUserAppointments()
-            navigate('/my-appointments')
-
-          }
-
-        } catch (error) {
-
-          console.log(error);
-          toast.error(error.message)
-
-        }
-
-      }
-    }
-
-    const rzp = new window.Razorpay(options)
-    rzp.open()
-
-  };
-
-  const appointmentRazorpay = async (appointmentId) => {
-
-    try {
-
-      const {data} = await axios.post(backendUrl + "/api/user/payment-razorpay",{appointmentId},{headers:{token}})
-
-      if (data.success) {
-        initPay(data.order)
-      }
-
-    } catch (error) {
-
-      console.log(error);
-      toast.error(error.message)
-
-    }
-
-  }
-
-  useEffect (() => {
-
-    if (token) {
-      getUserAppointments()
-    }
-
-  },[token])
-
-  return (
-    <div>
-
-        <p className='pb-3 mt-12 font-medium text-zinc-700 border-b'>My Appointments</p>
+      <div
+        className="grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-4 border-b"
+        key={index}
+      >
 
         <div>
+          <img
+            className="w-32 bg-indigo-50"
+            src={item.docData.image}
+            alt=""
+          />
+        </div>
 
-          {appointments.map((item,index)=>(
+        <div className="flex-1 text-sm text-zinc-600">
 
-            <div className='grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-2 border-b' key={index}>
+          <p className="text-neutral-800 font-semibold">
+            {item.docData.name}
+          </p>
 
-              <div>
-                <img className='w-32 bg-indigo-50' src={item.docData.image} alt="" />
-              </div>
+          <p>{item.docData.speciality}</p>
 
-              <div className='flex-1 text-sm text-zinc-600'>
+          <p className="text-zinc-700 font-medium mt-1">
+            Address:
+          </p>
 
-                <p className='text-neutral-800 font-semibold'>{item.docData.name}</p>
-                <p>{item.docData.speciality}</p>
+          <p className="text-xs">
+            {item.docData.address.line1}
+          </p>
 
-                <p className='text-zinc-700 font-medium mt-1'>Address:</p>
+          <p className="text-xs">
+            {item.docData.address.line2}
+          </p>
 
-                <p className='text-xs'>{item.docData.address.line1}</p>
-                <p className='text-xs'>{item.docData.address.line2}</p>
+          <p className="text-xs mt-1">
+            <span className="text-sm text-neutral-700 font-medium">
+              Date & Time:
+            </span>{" "}
+            {slotDateFormat(item.slotDate)} | {item.slotTime}
+          </p>
 
-                <p className='text-xs mt-1'>
-                  <span className='text-sm text-neutral-700 font-medium'>
-                    Date & Time:
-                  </span>
-                  {slotDateFormat(item.slotDate)} | {item.slotTime}
-                </p>
+        </div>
 
-              </div>
+        <div className="flex flex-col gap-2 justify-end">
 
-              <div className='flex flex-col gap-2 justify-end'>
+          {!item.cancelled && !item.isCompleted && !item.payment && (
 
-                {!item.cancelled && item.payment && !item.isCompleted &&
-                <button className='sm:min-w-48 py-2 border rounded text-stone-500 bg-indigo-50'>
-                  Paid
-                </button>}
+            <button className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300">
+              Pay Online
+            </button>
 
-                {!item.cancelled && !item.payment && !item.isCompleted &&
-                <button
-                onClick={()=>appointmentRazorpay(item._id)}
-                className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300'>
-                Pay Online
-                </button>}
+          )}
 
-                {!item.cancelled && !item.isCompleted &&
-                <button
-                onClick={()=>cancelAppointment(item._id)}
-                className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300'>
-                Cancel appointment
-                </button>}
+          {!item.cancelled && !item.isCompleted && (
 
-                {item.cancelled && !item.isCompleted &&
-                <button className='sm:min-w-48 py-2 border border-red-500 rounded text-red-500'>
-                  Appointment Cancelled
-                </button>}
+            <button
+              onClick={() => cancelAppointment(item._id)}
+              className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
+            >
+              Cancel appointment
+            </button>
 
-                {item.isCompleted &&
-                <div className='flex flex-col gap-2'>
+          )}
 
-                  <button className='sm:min-w-48 py-2 border border-green-500 rounded text-green-500'>
-                    Completed
-                  </button>
+          {item.isCompleted && (
 
-                  <button
-                  onClick={()=>viewPrescription(item.userId)}
-                  className='sm:min-w-48 py-2 bg-blue-500 text-white rounded'>
-                    View Prescription
-                  </button>
+            <div className="flex items-center flex-col gap-2  ">
 
-                </div>
-                }
+              <p className="text-green-500 text-sm font-medium">
+                Completed
+              </p>
 
-              </div>
+              <button
+                onClick={() => openPrescription(item._id)}
+                className="text-sm text-blue-500 text-center sm:min-w-48 py-2 px-5 border rounded hover:bg-blue-600 hover:text-white transition-all duration-300"
+              >
+                View Prescription
+              </button>
+
+            </div>
+
+          )}
+
+          {item.cancelled && (
+
+            <p className="text-red-500 text-sm font-medium mr-8">
+              Appointment Cancelled
+            </p>
+
+          )}
+
+        </div>
+
+      </div>
+
+    ))}
+
+  </div>
+
+  {showPrescription && prescription && (
+
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+
+      <div className="bg-white p-6 rounded-lg w-[500px] max-h-[80vh] overflow-y-scroll">
+
+        <h2 className="text-xl font-semibold mb-4">
+          Prescription
+        </h2>
+
+        <p>
+          <b>Disease:</b> {prescription.disease}
+        </p>
+
+        <div className="mt-4">
+
+          <h3 className="font-semibold mb-2">
+            Medicines
+          </h3>
+
+          {prescription.tablets.map((tab, index) => (
+
+            <div
+              key={index}
+              className="border p-2 rounded mb-2"
+            >
+
+              <p>
+                <b>{tab.tabletName}</b>
+              </p>
+
+              <p>
+                Timing :
+                {tab.morning && " Morning "}
+                {tab.afternoon && " Afternoon "}
+                {tab.night && " Night "}
+              </p>
+
+              <p>
+                Food : {tab.food}
+              </p>
+
+              <p>
+                Days : {tab.days}
+              </p>
 
             </div>
 
@@ -236,69 +247,27 @@ const MyAppointments = () => {
 
         </div>
 
-
-        {/* PRESCRIPTION POPUP */}
-
-        {showPrescription && prescription && (
-
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-
-        <div className="bg-white p-6 rounded w-[500px]">
-
-        <h2 className="text-xl font-semibold mb-4">Prescription</h2>
-
-        <p><b>Disease:</b> {prescription.disease}</p>
-
-        <table className="w-full mt-4 border">
-
-        <thead>
-
-        <tr className="border">
-        <th>Tablet</th>
-        <th>M</th>
-        <th>A</th>
-        <th>N</th>
-        <th>Food</th>
-        <th>Days</th>
-        </tr>
-
-        </thead>
-
-        <tbody>
-
-        {prescription.tablets.map((tab,index)=>(
-        <tr key={index} className="text-center border">
-
-        <td>{tab.tabletName}</td>
-        <td>{tab.morning ? "✔" : "-"}</td>
-        <td>{tab.afternoon ? "✔" : "-"}</td>
-        <td>{tab.night ? "✔" : "-"}</td>
-        <td>{tab.food}</td>
-        <td>{tab.days}</td>
-
-        </tr>
-        ))}
-
-        </tbody>
-
-        </table>
-
-        <p className="mt-3"><b>Notes:</b> {prescription.notes}</p>
+        <p className="mt-3">
+          <b>Notes :</b> {prescription.notes}
+        </p>
 
         <button
-        onClick={()=>setShowPrescription(false)}
-        className="mt-4 bg-red-500 text-white px-4 py-2 rounded">
-        Close
+          onClick={() => setShowPrescription(false)}
+          className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
+        >
+          Close
         </button>
 
-        </div>
-
-        </div>
-
-        )}
+      </div>
 
     </div>
-  )
+
+  )}
+
+</div>
+
+)
+
 }
 
 export default MyAppointments

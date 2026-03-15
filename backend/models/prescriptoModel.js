@@ -1,4 +1,15 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
+
+const tabletSchema = new mongoose.Schema({
+
+  tabletName:String,
+  morning:Boolean,
+  afternoon:Boolean,
+  night:Boolean,
+  food:String,
+  days:Number
+
+})
 
 const prescriptionSchema = new mongoose.Schema({
 
@@ -12,49 +23,18 @@ const prescriptionSchema = new mongoose.Schema({
     required:true
   },
 
+  doctorName:String,
+
   disease:{
     type:String,
     required:true
   },
 
-  tablets:[
-    {
-      tabletName:{
-        type:String,
-        required:true
-      },
+  tablets:[tabletSchema],
 
-      morning:{
-        type:Boolean,
-        default:false
-      },
+  notes:String,
 
-      afternoon:{
-        type:Boolean,
-        default:false
-      },
-
-      night:{
-        type:Boolean,
-        default:false
-      },
-
-      food:{
-        type:String,
-        enum:["Before Food","After Food"]
-      },
-
-      days:{
-        type:Number
-      }
-    }
-  ],
-
-  notes:{
-    type:String
-  },
-
-  date:{
+  createdAt:{
     type:Date,
     default:Date.now
   }
