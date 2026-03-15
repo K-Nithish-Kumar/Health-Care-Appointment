@@ -1,4 +1,4 @@
-import prescriptionModel from "../models/prescriptionModel.js"
+import prescriptionModel from "../models/prescriptoModel.js"
 
 
 // ADD PRESCRIPTION
